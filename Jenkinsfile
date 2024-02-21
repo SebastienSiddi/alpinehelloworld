@@ -8,8 +8,8 @@ pipeline {
         PRODUCTION = "${APP_NAME}-prod"
         DOCKERHUB_ID = "sebastiensiddi"
         DOCKERHUB_PASSWORD = credentials('dockerhub_login')
-        STG_API_ENDPOINT = "ip10-0-1-4-cnb20ibk3ds0ll6fnhag--1993.direct.docker.labs.eazytraining.fr"
-        STG_APP_ENDPOINT = "ip10-0-1-4-cnb20ibk3ds0ll6fnhag--80.direct.docker.labs.eazytraining.fr"
+        STG_API_ENDPOINT = "ip10-0-1-4-cnb20ibk3ds0ll6fnhag-1993.direct.docker.labs.eazytraining.fr"
+        STG_APP_ENDPOINT = "ip10-0-1-4-cnb20ibk3ds0ll6fnhag-80.direct.docker.labs.eazytraining.fr"
         PROD_API_ENDPOINT = "ip10-0-1-5-cnb20ibk3ds0ll6fnhag-1993.direct.docker.labs.eazytraining.fr"
         PROD_APP_ENDPOINT = "ip10-0-1-5-cnb20ibk3ds0ll6fnhag-80.direct.docker.labs.eazytraining.fr"
         INTERNAL_PORT = "5000"
