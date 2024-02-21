@@ -3,7 +3,7 @@ pipeline {
         IMAGE_NAME = "alplinehelloworld"
         IMAGE_TAG = "latest"
         DOCKERHUB_ID = "sebastiensiddi"
-        DOCKERHUB_CREDS = credentials('DockerHub Login')
+        DOCKERHUB_CREDS = credentials('dockerhub_login')
         STAGING = "staging"
         PRODUCTION = "production"
         APP_NAME = "alpinehelloworld"
