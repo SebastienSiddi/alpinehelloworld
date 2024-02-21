@@ -1,6 +1,6 @@
 pipeline {
     environment {
-        IMAGE_NAME = "alplinehelloworld"
+        IMAGE_NAME = "alpinehelloworld"
         IMAGE_TAG = "latest"
         DOCKERHUB_ID = "sebastiensiddi"
         DOCKERHUB_CREDS = credentials('dockerhub_login')
