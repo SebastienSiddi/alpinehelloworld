@@ -77,7 +77,7 @@ pipeline {
                 script {
                     sh '''
                         echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}00\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                        curl -v -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                        curl -v -X POST $STAGING_API_ENDPOINT/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     '''
                 }
             }
@@ -91,7 +91,7 @@ pipeline {
                 script {
                     sh '''
                     echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                    curl -v -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                    curl -v -X POST $PRODUCTION_API_ENDPOINT/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     '''
                 }
             }
