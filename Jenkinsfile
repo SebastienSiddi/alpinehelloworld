@@ -6,7 +6,7 @@ pipeline {
         IMAGE_TAG = "latest"
         STAGING = "${APP_NAME}-staging"
         PRODUCTION = "${APP_NAME}-prod"
-        DOCKERHUB_ID = "choco1992"
+        DOCKERHUB_ID = "sebastiensiddi"
         DOCKERHUB_PASSWORD = credentials('dockerhub_login')
         STG_API_ENDPOINT = "http://192.168.1.76:1993"
         STG_APP_ENDPOINT = "http://192.168.1.76:80"
