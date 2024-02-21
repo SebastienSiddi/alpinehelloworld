@@ -8,10 +8,10 @@ pipeline {
         PRODUCTION = "${APP_NAME}-prod"
         DOCKERHUB_ID = "sebastiensiddi"
         DOCKERHUB_PASSWORD = credentials('dockerhub_login')
-        STG_API_ENDPOINT = "http://192.168.1.76:1993"
-        STG_APP_ENDPOINT = "http://192.168.1.76:80"
-        PROD_API_ENDPOINT = "http://192.168.1.76:1994"
-        PROD_APP_ENDPOINT = "http://192.168.1.76:80"
+        STG_API_ENDPOINT = "ip10-0-6-6-cnb1abrk3ds0lioaagbg-1993.direct.docker.labs.eazytraining.fr"
+        STG_APP_ENDPOINT = "ip10-0-6-6-cnb1abrk3ds0lioaagbg-80.direct.docker.labs.eazytraining.fr"
+        PROD_API_ENDPOINT = "ip10-0-6-7-cnb1abrk3ds0lioaagbg-1993.direct.docker.labs.eazytraining.fr"
+        PROD_APP_ENDPOINT = "ip10-0-6-7-cnb1abrk3ds0lioaagbg-80.direct.docker.labs.eazytraining.fr"
         INTERNAL_PORT = "5000"
         EXTERNAL_PORT = "${APP_EXPOSED_PORT}"
         CONTAINER_IMAGE = "${DOCKERHUB_ID}/${IMAGE_NAME}:${IMAGE_TAG}"
@@ -72,14 +72,14 @@ pipeline {
             }
         }
         stage('STAGING - Deploy app') {
-        agent any
-        steps {
-            script {
-                sh """
-                    echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                    curl -v -X POST ${STG_API_ENDPOINT} -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
-                """
-            }
+            agent any
+            steps {
+                script {
+                    sh """
+                        echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                        curl -v -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                    """
+                }
             }
         }
         stage('PROD - Deploy app') {
@@ -92,7 +92,7 @@ pipeline {
                 script {
                     sh """
                     echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                    curl -v -X POST ${PROD_API_ENDPOINT} -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                    curl -v -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     """
                 }
             }
