@@ -2,16 +2,16 @@ pipeline {
     environment {
         IMAGE_NAME = "alpinehelloworld"
         APP_EXPOSED_PORT = "80"
-        APP_NAME = "app_alpinehelloworld"
+        APP_NAME = "alpinehelloworld"
         IMAGE_TAG = "latest"
         STAGING = "${APP_NAME}-staging"
-        PRODUCTION = "${APP_NAME}-production"
-        DOCKERHUB_ID = "sebastiensiddi"
+        PRODUCTION = "${APP_NAME}-prod"
+        DOCKERHUB_ID = "choco1992"
         DOCKERHUB_PASSWORD = credentials('dockerhub_login')
-        STAGING_API_ENDPOINT = "http://192.168.1.76:1993"
-        STAGING_APP_ENDPOINT = "http://192.168.1.76:80"
-        PRODUCTION_API_ENDPOINT = "http://192.168.1.76:1994"
-        PRODUCTION_APP_ENDPOINT = "http://192.168.1.76:80"
+        STG_API_ENDPOINT = "http://192.168.1.76:1993"
+        STG_APP_ENDPOINT = "http://192.168.1.76:80"
+        PROD_API_ENDPOINT = "http://192.168.1.76:1994"
+        PROD_APP_ENDPOINT = "http://192.168.1.76:80"
         INTERNAL_PORT = "5000"
         EXTERNAL_PORT = "${APP_EXPOSED_PORT}"
         CONTAINER_IMAGE = "${DOCKERHUB_ID}/${IMAGE_NAME}:${IMAGE_TAG}"
@@ -22,18 +22,20 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh 'docker build -t $CONTAINER_IMAGE .'
+                    sh 'docker build -t ${DOCKERHUB_ID}/$IMAGE_NAME:$IMAGE_TAG .'
                 }
             }
         }
-        stage('Run container based on build image') {
+        stage('Run container based on builded image') {
             agent any
             steps {
                 script {
-                    sh '''
-                        docker run -d -p 80:5000 -e PORT=5000 --name $IMAGE_NAME $CONTAINER_IMAGE
-                        sleep 5
-                    '''
+                sh '''
+                    echo "Cleaning existing container if exist"
+                    docker ps -a | grep -i $IMAGE_NAME && docker rm -f $IMAGE_NAME
+                    docker run --name $IMAGE_NAME -d -p $APP_EXPOSED_PORT:$INTERNAL_PORT -e PORT=$INTERNAL_PORT ${DOCKERHUB_ID}/$IMAGE_NAME:$IMAGE_TAG
+                    sleep 5
+                '''
                 }
             }
         }
@@ -41,7 +43,9 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh 'curl http://192.168.1.76 | grep -q "Hello world!"'
+                    sh '''
+                        curl http://192.168.1.76 | grep -q "Hello world!"
+                    '''
                 }
             }
         }
@@ -49,10 +53,10 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh '''
-                        docker stop $IMAGE_NAME
-                        docker rm $IMAGE_NAME
-                    '''
+                sh '''
+                    docker stop $IMAGE_NAME
+                    docker rm $IMAGE_NAME
+                '''
                 }
             }
         }
@@ -60,35 +64,36 @@ pipeline {
             agent any
             steps {
                 script {
-                    sh '''
-                        echo $DOCKERHUB_PASSWORD_PSW | docker login -u $DOCKERHUB_PASSWORD_USR --password-stdin
-                        docker push $DOCKERHUB_ID/$IMAGE_NAME:$IMAGE_TAG
-                    '''
+                sh '''
+                    echo $DOCKERHUB_PASSWORD_PSW | docker login -u $DOCKERHUB_PASSWORD_USR --password-stdin
+                    docker push ${DOCKERHUB_ID}/$IMAGE_NAME:$IMAGE_TAG
+                '''
                 }
             }
         }
         stage('STAGING - Deploy app') {
-            agent any
-            steps {
-                script {
-                    sh '''
-                        echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}00\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                        curl -v -X POST $STAGING_API_ENDPOINT -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
-                    '''
-                }
+        agent any
+        steps {
+            script {
+                sh """
+                    echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}00\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                    curl -v -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                """
+            }
             }
         }
         stage('PROD - Deploy app') {
             when {
-                expression { GIT_BRANCH == 'origin/main' }
+                expression { GIT_BRANCH == 'origin/master' }
             }
             agent any
+
             steps {
                 script {
-                    sh '''
-                    echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                    curl -v -X POST $PRODUCTION_API_ENDPOINT -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
-                    '''
+                    sh """
+                    echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                    curl -v -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                    """
                 }
             }
         }
