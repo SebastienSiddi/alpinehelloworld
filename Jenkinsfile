@@ -19,6 +19,7 @@ pipeline {
     parameters {
         string(name: 'PARAM_IMAGE_NAME', defaultValue: 'alpinehelloworld', description: 'Image Name')
         string(name: 'PARAM_PORT_EXPOSED', defaultValue: '80', description: 'APP EXPOSED PORT')
+    }
     agent none
     stages {
         stage('Build image') {
