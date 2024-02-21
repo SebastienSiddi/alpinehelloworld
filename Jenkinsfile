@@ -61,7 +61,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        docker login -u="$DOCKERHUB_CREDS_USR" -p="$DOCKERHUB_CREDS_PSW"
+                        echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
                         docker push $DOCKERHUB_ID/$IMAGE_NAME:$IMAGE_TAG
                     '''
                 }
@@ -72,8 +72,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"$STAGING_EXTERNAL_PORT\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                        curl -v -X POST ${STAGING_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                        echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"$STAGING_EXTERNAL_PORT\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                        curl -v -X POST $STAGING_API_ENDPOINT/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     '''
                 }
             }
@@ -86,8 +86,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"$PRODUCTION_EXTERNAL_PORT\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                    curl -v -X POST ${PRODUCTION_API_ENDPOINT}/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                    echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"$PRODUCTION_EXTERNAL_PORT\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                    curl -v -X POST $PRODUCTION_API_ENDPOINT/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     '''
                 }
             }
