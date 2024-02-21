@@ -1,21 +1,24 @@
 pipeline {
     environment {
         IMAGE_NAME = "alpinehelloworld"
+        APP_EXPOSED_PORT = "80"
+        APP_NAME = "app_alpinehelloworld"
         IMAGE_TAG = "latest"
+        STAGING = "${APP_NAME}-staging"
+        PRODUCTION = "${APP_NAME}-production"
         DOCKERHUB_ID = "sebastiensiddi"
-        DOCKERHUB_CREDS = credentials('dockerhub_login')
-        STAGING = "staging"
-        PRODUCTION = "production"
-        APP_NAME = "alpinehelloworld"
+        DOCKERHUB_PASSWORD = credentials('dockerhub_login')
         STAGING_API_ENDPOINT = "http://192.168.1.76:1993"
-        STAGING_APP_ENDPOINT = "http://192.168.1.76:83"
+        STAGING_APP_ENDPOINT = "http://192.168.1.76:80"
         PRODUCTION_API_ENDPOINT = "http://192.168.1.76:1994"
-        PRODUCTION_APP_ENDPOINT = "http://192.168.1.76:84"
+        PRODUCTION_APP_ENDPOINT = "http://192.168.1.76:80"
         INTERNAL_PORT = "5000"
-        STAGING_EXTERNAL_PORT = "83"
-        PRODUCTION_EXTERNAL_PORT = "84"
+        EXTERNAL_PORT = "${APP_EXPOSED_PORT}"
         CONTAINER_IMAGE = "${DOCKERHUB_ID}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
+    parameters {
+        string(name: 'PARAM_IMAGE_NAME', defaultValue: 'alpinehelloworld', description: 'Image Name')
+        string(name: 'PARAM_PORT_EXPOSED', defaultValue: '80', description: 'APP EXPOSED PORT')
     agent none
     stages {
         stage('Build image') {
@@ -72,8 +75,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"$STAGING_EXTERNAL_PORT\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                        curl -v -X POST $STAGING_API_ENDPOINT -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                        echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}00\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                        curl -v -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     '''
                 }
             }
@@ -86,8 +89,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"$PRODUCTION_EXTERNAL_PORT\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
-                    curl -v -X POST $PRODUCTION_API_ENDPOINT -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
+                    echo  {\\"Sébastien Siddi\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json
+                    curl -v -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json'  --data-binary @data.json  2>&1 | grep 200
                     '''
                 }
             }
